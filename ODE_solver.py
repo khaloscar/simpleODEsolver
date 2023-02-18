@@ -37,17 +37,33 @@ def RK1(fun, tspan, u0, stepsize, *args):
     return tt, yy
 
 def RK2(fun, tspan, u0, stepsize, *args):
+    # Aka Heuns
     N = int((tspan[-1] - tspan[0])/stepsize)
     tt = np.linspace(tspan[0], tspan[-1], N+1)
     yy = np.array([u0])
     tn = 0
     for i in range(N):
         F1 = fun(tn, yy[-1], *args)
-        F2 = fun(tn + stepsize, yy[-1] + stepsize*F1)
+        F2 = fun(tn + stepsize, yy[-1] + stepsize*F1, *args)
         ynext = yy[-1] + stepsize/2 * (F1 + F2)
         yy = np.append(yy, [ynext], axis=0)
         tn += stepsize
     return tt, yy
+
+def RK4(fun, tspan, u0, stepsize, *args):
+    N = int((tspan[-1] - tspan[0])/stepsize)
+    tt = np.linspace(tspan[0], tspan[-1], N+1)
+    yy = np.array([u0])
+    tn = 0
+    for i in range(N):
+        F1 = fun(tn, yy[-1], *args)
+        F2 = fun(tn + stepsize/2, yy[-1] + stepsize*F1/2, *args)
+        F3 = fun(tn + stepsize/2, yy[-1] + stepsize*F2/2, *args)
+        F4 = fun(tn + stepsize, yy[-1] + stepsize*F2, *args)
+        ynext = yy[-1] + stepsize/6 * (F1 + 2*F2 + 2*F3 + F4)
+        yy = np.append(yy, [ynext], axis=0)
+        tn += stepsize
+    return tt, yy    
 
 
 # A function tester tests the implemented method against
@@ -58,7 +74,7 @@ def RK2(fun, tspan, u0, stepsize, *args):
 def testfun(t, y):
     return -y
 
-# The method
+# The function for testing the implemented methods
 def tester(method = RK1):
     tspan = (0,4)
     u0 = 1
@@ -68,4 +84,4 @@ def tester(method = RK1):
     plt.title(f'Testing method {method}')
     plt.show()
 
-tester(RK2)
+tester(RK4)
